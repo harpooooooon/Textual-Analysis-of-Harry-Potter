@@ -1,5 +1,5 @@
 ---
-title: "Sentiment Analysis of Deathly Hallow"
+title: "Sentiment Analysis of The Deathly Hallow by J.K. Rowling"
 by: Nipunjeet Gujral
 ---
 
@@ -44,30 +44,28 @@ afinn <- series %>%
         mutate(method = "AFINN")
 
 bing_and_nrc <- bind_rows(series %>%
-                  group_by(book) %>% 
-                  mutate(word_count = 1:n(),
-                         index = word_count %/% 500 + 1) %>% 
-                  inner_join(get_sentiments("bing")) %>%
-                  mutate(method = "Bing"),
-          series %>%
-                  group_by(book) %>% 
-                  mutate(word_count = 1:n(),
-                         index = word_count %/% 500 + 1) %>%
-                  inner_join(get_sentiments("nrc") %>%
-                                     filter(sentiment %in% c("positive", "negative"))) %>%
-                  mutate(method = "NRC")) %>%
+        group_by(book) %>% 
+        mutate(word_count = 1:n(),
+               index = word_count %/% 500 + 1) %>% 
+        inner_join(get_sentiments("bing")) %>%
+        mutate(method = "Bing"),
+        series %>%
+        group_by(book) %>% 
+        mutate(word_count = 1:n(),
+               index = word_count %/% 500 + 1) %>%
+        inner_join(get_sentiments("nrc") %>%
+        filter(sentiment %in% c("positive", "negative"))) %>%
+        mutate(method = "NRC")) %>%
         count(book, method, index = index , sentiment) %>%
         ungroup() %>%
         spread(sentiment, n, fill = 0) %>%
         mutate(sentiment = positive - negative) %>%
         select(book, index, method, sentiment)
 
-bind_rows(afinn, 
-          bing_and_nrc) %>%
+bind_rows(afinn, bing_and_nrc) %>%
         ungroup() %>%
         mutate(book = factor(book, levels = titles)) %>%
-  ggplot(aes(index, sentiment, fill = method)) +
-  geom_bar(alpha = 0.8, stat = "identity", show.legend = FALSE) +
-  facet_grid(book ~ method)
+        ggplot(aes(index, sentiment, fill = method)) +
+        geom_bar(alpha = 0.8, stat = "identity", show.legend = FALSE) +
+        facet_grid(book ~ method)
 ```
-
